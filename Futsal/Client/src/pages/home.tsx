@@ -40,7 +40,7 @@ const HomePage = () => {
                 onClick={handleNext}
                 className="bg-[#00f0ff] text-black px-8 py-2 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300 shadow-lg shadow-[#00f0ff]/20"
               >
-                Book Court
+                Go Ahead!
               </button>
               <button
                 onClick={() => navigate("/admin")}
