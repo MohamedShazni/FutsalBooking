@@ -35,12 +35,20 @@ const HomePage = () => {
               Book Your Court in a Click!
             </p>
             <p className="text-[18px] mb-5 italic">Kickoff & Have Fun</p>
-            <button
-              onClick={handleNext}
-              className="bg-[#00f0ff] text-black px-8 py-2 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300"
-            >
-              Next
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+              <button
+                onClick={handleNext}
+                className="bg-[#00f0ff] text-black px-8 py-2 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300 shadow-lg shadow-[#00f0ff]/20"
+              >
+                Book Court
+              </button>
+              <button
+                onClick={() => navigate("/admin")}
+                className="bg-transparent border border-[#00f0ff]/40 text-[#00f0ff] px-6 py-2 rounded-full text-[16px] font-semibold hover:bg-[#00f0ff]/10 transition-all duration-300"
+              >
+                Admin Console
+              </button>
+            </div>
           </div>
         </div>
       </div>
