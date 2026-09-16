@@ -49,16 +49,16 @@ const ContactPage = () => {
                   <CardContent>
                     <input
                       type="text"
-                      placeholder="Enter Your Name"
-                      className="w-full bg-white mt-4 p-4 rounded-md"
+                      placeholder="Enter Name"
+                      className="w-full bg-white mt-4 p-4 rounded-lg border focus:outline-[#00f0ff]"
                       required
                     />
                   </CardContent>
                   <CardContent>
                     <input
                       type="tel"
-                      placeholder="Enter Your Mobile Number"
-                      className="w-full bg-white mt-4 p-4 rounded-md"
+                      placeholder="Enter Mobile Number"
+                      className="w-full bg-white mt-4 p-4 rounded-lg border focus:outline-[#00f0ff]"
                       pattern="[0-9]{10}"
                       required
                     />
@@ -66,7 +66,7 @@ const ContactPage = () => {
                 </Card>
                 <button
                   type="submit"
-                  className="bg-[#00f0ff] text-black px-10 py-4 text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black"
+                  className="bg-[#00f0ff] text-black px-8 py-3 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300"
                 >
                   Book Now
                 </button>
@@ -74,7 +74,7 @@ const ContactPage = () => {
             </div>
             <button
               onClick={handleBack}
-              className="bg-[#00f0ff] text-black px-12 py-4 text-[20px] font-semibold hover:bg-white hover:text-black hover:border-black mt-2"
+              className="bg-[#00f0ff] text-black px-8 py-3 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300"
             >
               Go Back
             </button>
