@@ -28,12 +28,33 @@ const BookingPage = () => {
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const courts = [
-    { id: 1, name: "Court A", type: "Indoor" },
-    { id: 2, name: "Court B", type: "Indoor" },
-    { id: 3, name: "Court C", type: "Indoor" },
-    { id: 4, name: "Court D", type: "Indoor" },
-  ];
+  const [courts, setCourts] = useState<any[]>([
+    { id: 1, courtId: 1, name: "Court A", type: "Indoor", basePrice: 2500, peakPrice: 3000, status: "Active" },
+    { id: 2, courtId: 2, name: "Court B", type: "Indoor", basePrice: 2500, peakPrice: 3000, status: "Active" },
+    { id: 3, courtId: 3, name: "Court C", type: "Indoor", basePrice: 2500, peakPrice: 3000, status: "Active" },
+    { id: 4, courtId: 4, name: "Court D", type: "Indoor", basePrice: 2500, peakPrice: 3000, status: "Active" },
+  ]);
+
+  // Fetch courts from backend API
+  const fetchCourts = () => {
+    axios
+      .get("http://localhost:3001/api/courts")
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setCourts(
+            res.data.map((c: any) => ({
+              ...c,
+              id: c.courtId || c.id,
+            }))
+          );
+        }
+      })
+      .catch((err) => console.error("Error fetching courts:", err));
+  };
+
+  useEffect(() => {
+    fetchCourts();
+  }, []);
 
   const timeSlots = [
     "09 AM",
@@ -77,31 +98,42 @@ const BookingPage = () => {
         setBookedCourts((prev) => [...prev, data.courtId]);
       }
     });
+
+    socket.on("court_update", () => {
+      fetchCourts();
+    });
+
     return () => {
       socket.off("booking_update");
+      socket.off("court_update");
     };
   }, [selectedDate, selectedTime]);
 
-  // Helper to determine price based on time
-  const getPrice = (time: string) => {
-    if (!time) return 0;
+  // Helper to determine price based on time and court
+  const getPrice = (time: string, court?: any) => {
+    if (!time) return court?.basePrice || 2500;
 
     // Parse hour from string "09 AM", " 6 PM"
     const hourPart = parseInt(time.trim().split(" ")[0]);
     const isPM = time.includes("PM");
 
-    // Evening rates (6 PM - 11 PM) -> 3000
-    // Note: 12 PM is noon, so it is not included in >= 6 check
+    // Evening rates (6 PM - 11 PM)
     if (isPM && hourPart >= 6 && hourPart !== 12) {
-      return 3000;
+      return court?.peakPrice || 3000;
     }
 
-    // Default rate (AM and early PM) -> 2500
-    return 2500;
+    // Default rate (AM and early PM)
+    return court?.basePrice || 2500;
   };
 
   const handleBooking = (court: any) => {
-    if (bookedCourts.includes(court.id)) {
+    const cId = court.courtId || court.id;
+    if (court.status === "Maintenance") {
+      alert("This court is currently under maintenance.");
+      return;
+    }
+
+    if (bookedCourts.includes(cId)) {
       alert("This court is already booked for the selected time.");
       return;
     }
@@ -115,8 +147,8 @@ const BookingPage = () => {
       }
 
       // Create a court object with the dynamic price
-      const price = getPrice(selectedTime);
-      setSelectedCourt({ ...court, price });
+      const price = getPrice(selectedTime, court);
+      setSelectedCourt({ id: cId, name: court.name, price });
       setShowConfirmation(true);
     }
   };
@@ -195,40 +227,62 @@ const BookingPage = () => {
 
             {/* Court List */}
             <div className="grid grid-cols-2 gap-6 mb-8 w-full">
-              {courts.map((court) => (
-                <Card
-                  key={court.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardHeader>
-                    <CardTitle>{court.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-6">{court.type}</p>
-                    <p className="text-[18px] mb-6">
-                      Rs.{selectedTime ? getPrice(selectedTime) : "2500 - 3000"}{" "}
-                      /hour
-                    </p>
-                    <button
-                      className={`w-full py-2 px-4 rounded-lg transition-colors ${
-                        bookedCourts.includes(court.id)
-                          ? "bg-red-500 text-white cursor-not-allowed" // Booked style
-                          : selectedDate && selectedTime
+              {courts.map((court) => {
+                const cId = court.courtId || court.id;
+                const isMaintenance = court.status === "Maintenance";
+                const isBooked = bookedCourts.includes(cId);
+
+                return (
+                  <Card
+                    key={cId}
+                    className={`hover:shadow-lg transition-shadow relative overflow-hidden ${
+                      isMaintenance ? "opacity-75 border-amber-500/40" : ""
+                    }`}
+                  >
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>{court.name}</CardTitle>
+                        {isMaintenance && (
+                          <span className="text-[10px] bg-amber-500/20 text-amber-500 border border-amber-500/40 px-2 py-0.5 rounded font-bold">
+                            Maintenance
+                          </span>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{court.type || "Indoor"}</p>
+                      <p className="text-[18px] mb-6 font-semibold">
+                        Rs. {selectedTime ? getPrice(selectedTime, court) : `${court.basePrice || 2500} - ${court.peakPrice || 3000}`}{" "}
+                        /hour
+                      </p>
+                      <button
+                        className={`w-full py-2 px-4 rounded-lg transition-colors ${
+                          isMaintenance
+                            ? "bg-amber-500 text-black cursor-not-allowed font-semibold"
+                            : isBooked
+                            ? "bg-red-500 text-white cursor-not-allowed" // Booked style
+                            : selectedDate && selectedTime
                             ? "bg-blue-500 text-white hover:bg-blue-600"
                             : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                      onClick={() => handleBooking(court)}
-                      disabled={
-                        !selectedDate ||
-                        !selectedTime ||
-                        bookedCourts.includes(court.id)
-                      }
-                    >
-                      {bookedCourts.includes(court.id) ? "Booked" : "Book Now"}
-                    </button>
-                  </CardContent>
-                </Card>
-              ))}
+                        }`}
+                        onClick={() => handleBooking(court)}
+                        disabled={
+                          isMaintenance ||
+                          !selectedDate ||
+                          !selectedTime ||
+                          isBooked
+                        }
+                      >
+                        {isMaintenance
+                          ? "Maintenance"
+                          : isBooked
+                          ? "Booked"
+                          : "Book Now"}
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             {/* Alert if date/time not selected */}
