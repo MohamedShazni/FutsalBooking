@@ -37,9 +37,9 @@ const HomePage = () => {
             <p className="text-[18px] mb-5 italic">Kickoff & Have Fun</p>
             <button
               onClick={handleNext}
-              className="bg-[#00f0ff] text-black px-10 py-4 text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black"
+              className="bg-[#00f0ff] text-black px-8 py-2 rounded-full text-[18px] font-semibold hover:bg-white hover:text-black hover:border-black transition-all duration-300"
             >
-              Go Ahead!
+              Next
             </button>
           </div>
         </div>
